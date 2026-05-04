@@ -10,7 +10,7 @@ contract GovTokenTest is Test {
     address public alice;
 
     function setUp() public {
-        owner = address(this); 
+        owner = address(this);
         alice = makeAddr("alice");
         token = new GovToken(owner);
     }
