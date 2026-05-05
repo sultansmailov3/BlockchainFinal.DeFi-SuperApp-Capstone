@@ -59,5 +59,45 @@ contract AMM is ERC20, ReentrancyGuard {
 
         emit Mint(msg.sender, amount0, amount1, shares);
     }
-    
+
+    function getAmountOut(uint256 amountIn, uint256 reserveIn, uint256 reserveOut) 
+        public 
+        pure 
+        returns (uint256 amountOut) 
+    {
+        require(amountIn > 0, "Insufficient input amount");
+        require(reserveIn > 0 && reserveOut > 0, "Insufficient liquidity");
+
+        uint256 amountInWithFee = amountIn * 997;
+        uint256 numerator = amountInWithFee * reserveOut;
+        uint256 denominator = (reserveIn * 1000) + amountInWithFee;
+        amountOut = numerator / denominator;
+    }
+
+    function swap(address tokenIn, uint256 amountIn, uint256 minAmountOut) 
+        external 
+        nonReentrant 
+        returns (uint256 amountOut) 
+    {
+        require(tokenIn == address(token0) || tokenIn == address(token1), "Invalid token");
+        
+        bool isToken0 = tokenIn == address(token0);
+        (IERC20 tIn, IERC20 tOut, uint256 resIn, uint256 resOut) = isToken0 
+            ? (token0, token1, reserve0, reserve1) 
+            : (token1, token0, reserve1, reserve0);
+
+        tIn.safeTransferFrom(msg.sender, address(this), amountIn);
+
+        amountOut = getAmountOut(amountIn, resIn, resOut);
+        
+        require(amountOut >= minAmountOut, "Slippage exceeded");
+
+        tOut.safeTransfer(msg.sender, amountOut);
+
+        (Checks-Effects-Interactions)
+        reserve0 = token0.balanceOf(address(this));
+        reserve1 = token1.balanceOf(address(this));
+
+        emit Swap(msg.sender, amountIn, amountOut, isToken0);
+    }
 }
