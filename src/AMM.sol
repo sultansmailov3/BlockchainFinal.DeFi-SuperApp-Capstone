@@ -39,7 +39,6 @@ contract AMM is ERC20, ReentrancyGuard {
         }
     }
 
-
     function addLiquidity(uint256 amount0, uint256 amount1) external nonReentrant returns (uint256 shares) {
         token0.safeTransferFrom(msg.sender, address(this), amount0);
         token1.safeTransferFrom(msg.sender, address(this), amount1);
@@ -53,17 +52,17 @@ contract AMM is ERC20, ReentrancyGuard {
 
         require(shares > 0, "Insufficient shares");
         _mint(msg.sender, shares);
-        
+
         reserve0 = token0.balanceOf(address(this));
         reserve1 = token1.balanceOf(address(this));
 
         emit Mint(msg.sender, amount0, amount1, shares);
     }
 
-    function getAmountOut(uint256 amountIn, uint256 reserveIn, uint256 reserveOut) 
-        public 
-        pure 
-        returns (uint256 amountOut) 
+    function getAmountOut(uint256 amountIn, uint256 reserveIn, uint256 reserveOut)
+        public
+        pure
+        returns (uint256 amountOut)
     {
         require(amountIn > 0, "Insufficient input amount");
         require(reserveIn > 0 && reserveOut > 0, "Insufficient liquidity");
@@ -74,30 +73,27 @@ contract AMM is ERC20, ReentrancyGuard {
         amountOut = numerator / denominator;
     }
 
-    function swap(address tokenIn, uint256 amountIn, uint256 minAmountOut) 
-        external 
-        nonReentrant 
-        returns (uint256 amountOut) 
+    function swap(address tokenIn, uint256 amountIn, uint256 minAmountOut)
+        external
+        nonReentrant
+        returns (uint256 amountOut)
     {
         require(tokenIn == address(token0) || tokenIn == address(token1), "Invalid token");
-        
+
         bool isToken0 = tokenIn == address(token0);
-        (IERC20 tIn, IERC20 tOut, uint256 resIn, uint256 resOut) = isToken0 
-            ? (token0, token1, reserve0, reserve1) 
-            : (token1, token0, reserve1, reserve0);
+        (IERC20 tIn, IERC20 tOut, uint256 resIn, uint256 resOut) =
+            isToken0 ? (token0, token1, reserve0, reserve1) : (token1, token0, reserve1, reserve0);
 
         tIn.safeTransferFrom(msg.sender, address(this), amountIn);
 
         amountOut = getAmountOut(amountIn, resIn, resOut);
-        
+
         require(amountOut >= minAmountOut, "Slippage exceeded");
 
         tOut.safeTransfer(msg.sender, amountOut);
 
-        (Checks-Effects-Interactions)
         reserve0 = token0.balanceOf(address(this));
         reserve1 = token1.balanceOf(address(this));
-
         emit Swap(msg.sender, amountIn, amountOut, isToken0);
     }
 }
