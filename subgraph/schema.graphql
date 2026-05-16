@@ -1,0 +1,34 @@
+type Swap @entity {
+  id: ID!
+  sender: Bytes!
+  amountIn: BigInt!
+  amountOut: BigInt!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+}
+
+type LiquidityPosition @entity {
+  id: ID!
+  provider: Bytes!
+  liquidity: BigInt!
+  timestamp: BigInt!
+}
+
+type Proposal @entity {
+  id: ID!
+  proposalId: BigInt!
+  proposer: Bytes!
+  description: String!
+  startBlock: BigInt!
+  endBlock: BigInt!
+  state: String!
+}
+
+type Vote @entity {
+  id: ID!
+  proposalId: BigInt!
+  voter: Bytes!
+  support: Int!
+  weight: BigInt!
+  timestamp: BigInt!
+}

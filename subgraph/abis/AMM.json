@@ -1,0 +1,22 @@
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": true, "name": "sender", "type": "address"},
+      {"indexed": false, "name": "amountIn", "type": "uint256"},
+      {"indexed": false, "name": "amountOut", "type": "uint256"}
+    ],
+    "name": "Swap",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": true, "name": "provider", "type": "address"},
+      {"indexed": false, "name": "amount0", "type": "uint256"},
+      {"indexed": false, "name": "amount1", "type": "uint256"}
+    ],
+    "name": "LiquidityAdded",
+    "type": "event"
+  }
+]
