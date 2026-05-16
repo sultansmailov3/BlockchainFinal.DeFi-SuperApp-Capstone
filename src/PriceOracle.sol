@@ -13,23 +13,16 @@ interface AggregatorV3Interface {
 
 contract PriceOracle {
     AggregatorV3Interface public feed;
-    uint256 public constant MAX_STALENESS = 3600; // 1 час
+    uint256 public constant MAX_STALENESS = 3600;
 
     constructor(address _feed) {
         feed = AggregatorV3Interface(_feed);
     }
 
     function getPrice() external view returns (int256) {
-        (
-            ,
-            int256 price,
-            ,
-            uint256 updatedAt,
-        ) = feed.latestRoundData();
-
+        (, int256 price,, uint256 updatedAt,) = feed.latestRoundData();
         require(price > 0, "Invalid price");
         require(block.timestamp - updatedAt <= MAX_STALENESS, "Stale price");
-
         return price;
     }
 }
