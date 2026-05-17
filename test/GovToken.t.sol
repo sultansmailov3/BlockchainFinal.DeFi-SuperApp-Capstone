@@ -95,28 +95,12 @@ contract GovTokenTest is Test {
         uint256 value = 50 ether;
         uint256 deadline = block.timestamp + 1 days;
 
-        bytes32 permitTypeHash = keccak256(
-            "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
-        );
+        bytes32 permitTypeHash =
+            keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
 
-        bytes32 structHash = keccak256(
-            abi.encode(
-                permitTypeHash,
-                alice,
-                bob,
-                value,
-                token.nonces(alice),
-                deadline
-            )
-        );
+        bytes32 structHash = keccak256(abi.encode(permitTypeHash, alice, bob, value, token.nonces(alice), deadline));
 
-        bytes32 digest = keccak256(
-            abi.encodePacked(
-                "\x19\x01",
-                token.DOMAIN_SEPARATOR(),
-                structHash
-            )
-        );
+        bytes32 digest = keccak256(abi.encodePacked("\x19\x01", token.DOMAIN_SEPARATOR(), structHash));
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(alicePrivateKey, digest);
 

@@ -33,10 +33,7 @@ contract ProtocolUpgradeTest is Test {
     function test_UpgradeToV2() public {
         ProtocolV2 implV2 = new ProtocolV2();
         vm.prank(owner);
-        v1.upgradeToAndCall(
-            address(implV2),
-            abi.encodeCall(ProtocolV2.initializeV2, ("MyProtocol"))
-        );
+        v1.upgradeToAndCall(address(implV2), abi.encodeCall(ProtocolV2.initializeV2, ("MyProtocol")));
         v2 = ProtocolV2(address(proxy));
         assertEq(v2.getVersion(), 2);
         assertEq(v2.name(), "MyProtocol");

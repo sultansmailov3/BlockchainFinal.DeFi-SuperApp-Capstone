@@ -20,9 +20,7 @@ contract Deploy is Script {
 
         address[] memory proposers = new address[](0);
         address[] memory executors = new address[](0);
-        ProtocolTimelock timelock = new ProtocolTimelock(
-            2 days, proposers, executors, deployer
-        );
+        ProtocolTimelock timelock = new ProtocolTimelock(2 days, proposers, executors, deployer);
 
         ProtocolGovernor governor = new ProtocolGovernor(token, timelock);
 

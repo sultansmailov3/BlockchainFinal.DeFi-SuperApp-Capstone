@@ -59,5 +59,4 @@ contract GovernanceTest is Test {
 
         assertEq(uint256(governor.state(proposalId)), 4);
     }
-  
 }
