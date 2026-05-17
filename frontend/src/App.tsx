@@ -1,8 +1,8 @@
 import { useAccount, useConnect, useDisconnect, useBalance, useReadContract, useWriteContract, useChainId, useSwitchChain } from 'wagmi'
 import { arbitrumSepolia } from 'wagmi/chains'
 
-const GOV_TOKEN_ADDRESS = '0x0000000000000000000000000000000000000000'
-const GOVERNOR_ADDRESS = '0x0000000000000000000000000000000000000000'
+const GOV_TOKEN_ADDRESS = '0x0000000000000000000000000000000000000000' as `0x${string}`
+const GOVERNOR_ADDRESS = '0x0000000000000000000000000000000000000000' as `0x${string}`
 
 const govTokenAbi = [
   { name: 'balanceOf', type: 'function', stateMutability: 'view', inputs: [{ name: 'account', type: 'address' }], outputs: [{ type: 'uint256' }] },
@@ -15,24 +15,7 @@ const governorAbi = [
   { name: 'castVote', type: 'function', stateMutability: 'nonpayable', inputs: [{ name: 'proposalId', type: 'uint256' }, { name: 'support', type: 'uint8' }], outputs: [{ type: 'uint256' }] },
 ] as const
 
-const s = {
-  app: { minHeight: '100vh', background: '#0f0f1a', color: '#e2e8f0', fontFamily: 'monospace', padding: '2rem' },
-  header: { borderBottom: '1px solid #2d3748', paddingBottom: '1rem', marginBottom: '2rem' },
-  title: { fontSize: '1.5rem', fontWeight: 'bold', color: '#7c3aed', margin: 0 },
-  subtitle: { color: '#718096', fontSize: '0.85rem', margin: '4px 0 0 0' },
-  card: { background: '#1a1a2e', border: '1px solid #2d3748', borderRadius: '12px', padding: '1.5rem', marginBottom: '1rem' },
-  label: { color: '#718096', fontSize: '0.75rem', textTransform: 'uppercase' as const, letterSpacing: '0.05em' },
-  value: { color: '#e2e8f0', fontSize: '0.9rem', marginTop: '4px', wordBreak: 'break-all' as const },
-  btn: { background: '#7c3aed', color: 'white', border: 'none', borderRadius: '8px', padding: '10px 20px', cursor: 'pointer', marginRight: '8px', marginTop: '8px', fontSize: '0.85rem' },
-  btnGreen: { background: '#059669', color: 'white', border: 'none', borderRadius: '8px', padding: '10px 20px', cursor: 'pointer', marginRight: '8px', marginTop: '8px', fontSize: '0.85rem' },
-  btnRed: { background: '#dc2626', color: 'white', border: 'none', borderRadius: '8px', padding: '10px 20px', cursor: 'pointer', marginRight: '8px', marginTop: '8px', fontSize: '0.85rem' },
-  btnOutline: { background: 'transparent', color: '#7c3aed', border: '1px solid #7c3aed', borderRadius: '8px', padding: '10px 20px', cursor: 'pointer', fontSize: '0.85rem' },
-  error: { color: '#fc8181', fontSize: '0.8rem', marginTop: '8px' },
-  connectPage: { display: 'flex', flexDirection: 'column' as const, alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#0f0f1a' },
-  connectCard: { background: '#1a1a2e', border: '1px solid #2d3748', borderRadius: '16px', padding: '3rem', textAlign: 'center' as const, maxWidth: '400px', width: '100%' },
-}
-
-function App() {
+export default function App() {
   const { address, isConnected } = useAccount()
   const { connectors, connect, error: connectError } = useConnect()
   const { disconnect } = useDisconnect()
@@ -55,7 +38,7 @@ function App() {
     args: address ? [address] : undefined,
   })
 
-  const { data: delegateAddress } = useReadContract({
+  const { data: delegateAddr } = useReadContract({
     address: GOV_TOKEN_ADDRESS,
     abi: govTokenAbi,
     functionName: 'delegates',
@@ -64,90 +47,190 @@ function App() {
 
   const isWrongNetwork = chainId !== arbitrumSepolia.id
 
-  if (!isConnected) {
-    return (
-      <div style={s.connectPage}>
-        <div style={s.connectCard}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚡</div>
-          <h2 style={{ color: '#7c3aed', margin: '0 0 0.5rem 0' }}>DeFi Super-App</h2>
-          <p style={{ color: '#718096', marginBottom: '2rem' }}>Connect your wallet to continue</p>
-          {connectors.map((connector) => (
-            <button key={connector.uid} style={{ ...s.btn, display: 'block', width: '100%', marginBottom: '8px' }}
-              onClick={() => connect({ connector })}>
-              Connect {connector.name}
-            </button>
-          ))}
-          {connectError && <p style={s.error}>{connectError.message}</p>}
-        </div>
-      </div>
-    )
-  }
+  const shortAddr = (addr: string) => `${addr.slice(0, 6)}...${addr.slice(-4)}`
 
-  if (isWrongNetwork) {
-    return (
-      <div style={s.connectPage}>
-        <div style={s.connectCard}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</div>
-          <h2 style={{ color: '#f59e0b', margin: '0 0 1rem 0' }}>Wrong Network</h2>
-          <p style={{ color: '#718096', marginBottom: '2rem' }}>Please switch to Arbitrum Sepolia</p>
-          <button style={s.btn} onClick={() => switchChain({ chainId: arbitrumSepolia.id })}>
-            Switch Network
+  if (!isConnected) return (
+    <div style={{
+      minHeight: '100vh', background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Inter', monospace"
+    }}>
+      <div style={{
+        background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(20px)',
+        border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px',
+        padding: '3rem', textAlign: 'center', maxWidth: '420px', width: '90%'
+      }}>
+        <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>⚡</div>
+        <h1 style={{ color: '#fff', fontSize: '1.8rem', fontWeight: 800, margin: '0 0 0.5rem' }}>DeFi Super-App</h1>
+        <p style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '2rem', fontSize: '0.9rem' }}>
+          AMM · Vault · Governance · L2
+        </p>
+        {connectors.map(c => (
+          <button key={c.uid} onClick={() => connect({ connector: c })} style={{
+            display: 'block', width: '100%', marginBottom: '12px',
+            background: 'linear-gradient(135deg, #667eea, #764ba2)',
+            color: '#fff', border: 'none', borderRadius: '12px',
+            padding: '14px', fontSize: '1rem', fontWeight: 600, cursor: 'pointer',
+            transition: 'opacity 0.2s'
+          }}>
+            Connect {c.name}
           </button>
-        </div>
+        ))}
+        {connectError && <p style={{ color: '#ff6b6b', fontSize: '0.8rem', marginTop: '1rem' }}>{connectError.message}</p>}
+        <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.75rem', marginTop: '1.5rem' }}>
+          Arbitrum Sepolia Testnet
+        </p>
       </div>
-    )
-  }
+    </div>
+  )
+
+  if (isWrongNetwork) return (
+    <div style={{
+      minHeight: '100vh', background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Inter', monospace"
+    }}>
+      <div style={{
+        background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(20px)',
+        border: '1px solid rgba(255,165,0,0.3)', borderRadius: '24px',
+        padding: '3rem', textAlign: 'center', maxWidth: '420px'
+      }}>
+        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</div>
+        <h2 style={{ color: '#ffa500', margin: '0 0 1rem' }}>Wrong Network</h2>
+        <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '2rem' }}>Please switch to Arbitrum Sepolia</p>
+        <button onClick={() => switchChain({ chainId: arbitrumSepolia.id })} style={{
+          background: 'linear-gradient(135deg, #f093fb, #f5576c)',
+          color: '#fff', border: 'none', borderRadius: '12px',
+          padding: '14px 28px', fontSize: '1rem', fontWeight: 600, cursor: 'pointer'
+        }}>
+          Switch Network
+        </button>
+      </div>
+    </div>
+  )
 
   return (
-    <div style={s.app}>
-      <div style={s.header}>
-        <h1 style={s.title}>⚡ DeFi Super-App</h1>
-        <p style={s.subtitle}>Arbitrum Sepolia Testnet</p>
+    <div style={{
+      minHeight: '100vh', background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
+      fontFamily: "'Inter', monospace", color: '#fff', padding: '2rem'
+    }}>
+      {/* Header */}
+      <div style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        marginBottom: '2rem', paddingBottom: '1rem',
+        borderBottom: '1px solid rgba(255,255,255,0.1)'
+      }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800 }}>⚡ DeFi Super-App</h1>
+          <p style={{ margin: 0, color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem' }}>Arbitrum Sepolia</p>
+        </div>
+        <button onClick={() => disconnect()} style={{
+          background: 'rgba(255,255,255,0.1)', color: '#fff',
+          border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px',
+          padding: '8px 16px', cursor: 'pointer', fontSize: '0.85rem'
+        }}>
+          {shortAddr(address!)} ✕
+        </button>
       </div>
 
-      <div style={s.card}>
-        <h3 style={{ margin: '0 0 1rem 0', color: '#a78bfa' }}>Account</h3>
-        <div style={{ marginBottom: '0.75rem' }}>
-          <div style={s.label}>Address</div>
-          <div style={s.value}>{address}</div>
-        </div>
-        <div style={{ marginBottom: '0.75rem' }}>
-          <div style={s.label}>ETH Balance</div>
-          <div style={s.value}>{balance ? `${Number(balance.formatted).toFixed(4)} ETH` : '...'}</div>
-        </div>
-        <div style={{ marginBottom: '0.75rem' }}>
-          <div style={s.label}>GOV Balance</div>
-          <div style={s.value}>{govBalance !== undefined ? govBalance.toString() : '...'}</div>
-        </div>
-        <div style={{ marginBottom: '0.75rem' }}>
-          <div style={s.label}>Voting Power</div>
-          <div style={s.value}>{votingPower !== undefined ? votingPower.toString() : '...'}</div>
-        </div>
-        <div style={{ marginBottom: '0.75rem' }}>
-          <div style={s.label}>Delegate</div>
-          <div style={s.value}>{delegateAddress || '...'}</div>
-        </div>
-        <button style={s.btnOutline} onClick={() => disconnect()}>Disconnect</button>
-      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
 
-      <div style={s.card}>
-        <h3 style={{ margin: '0 0 1rem 0', color: '#a78bfa' }}>Governance Actions</h3>
-        <button style={s.btn} disabled={isPending}
-          onClick={() => address && writeContract({ address: GOV_TOKEN_ADDRESS, abi: govTokenAbi, functionName: 'delegate', args: [address] })}>
-          {isPending ? 'Pending...' : '🗳️ Self Delegate'}
-        </button>
-        <button style={s.btnGreen} disabled={isPending}
-          onClick={() => writeContract({ address: GOVERNOR_ADDRESS, abi: governorAbi, functionName: 'castVote', args: [BigInt(1), 1] })}>
-          ✅ Vote YES #1
-        </button>
-        <button style={s.btnRed} disabled={isPending}
-          onClick={() => writeContract({ address: GOVERNOR_ADDRESS, abi: governorAbi, functionName: 'castVote', args: [BigInt(1), 0] })}>
-          ❌ Vote NO #1
-        </button>
-        {writeError && <p style={s.error}>{writeError.message}</p>}
+        {/* Account Card */}
+        <div style={{
+          background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '1.5rem'
+        }}>
+          <h3 style={{ margin: '0 0 1.2rem', color: '#a78bfa', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            👤 Account
+          </h3>
+          {[
+            { label: 'Address', value: shortAddr(address!) },
+            { label: 'ETH Balance', value: balance ? `${Number(balance.formatted).toFixed(4)} ETH` : '...' },
+            { label: 'GOV Balance', value: govBalance !== undefined ? Number(govBalance).toLocaleString() : '...' },
+            { label: 'Voting Power', value: votingPower !== undefined ? Number(votingPower).toLocaleString() : '...' },
+            { label: 'Delegate', value: delegateAddr ? shortAddr(delegateAddr) : '...' },
+          ].map(({ label, value }) => (
+            <div key={label} style={{
+              display: 'flex', justifyContent: 'space-between',
+              padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.06)'
+            }}>
+              <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}>{label}</span>
+              <span style={{ color: '#fff', fontSize: '0.85rem', fontWeight: 500 }}>{value}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Governance Card */}
+        <div style={{
+          background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '1.5rem'
+        }}>
+          <h3 style={{ margin: '0 0 1.2rem', color: '#a78bfa', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            🗳️ Governance
+          </h3>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', marginBottom: '1rem' }}>
+            Delegate your tokens to participate in voting
+          </p>
+          <button
+            disabled={isPending}
+            onClick={() => address && writeContract({ address: GOV_TOKEN_ADDRESS, abi: govTokenAbi, functionName: 'delegate', args: [address] })}
+            style={{
+              width: '100%', marginBottom: '10px',
+              background: isPending ? 'rgba(255,255,255,0.1)' : 'linear-gradient(135deg, #667eea, #764ba2)',
+              color: '#fff', border: 'none', borderRadius: '12px',
+              padding: '12px', fontSize: '0.9rem', fontWeight: 600, cursor: isPending ? 'not-allowed' : 'pointer'
+            }}>
+            {isPending ? '⏳ Pending...' : '🔗 Self Delegate'}
+          </button>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            <button
+              disabled={isPending}
+              onClick={() => writeContract({ address: GOVERNOR_ADDRESS, abi: governorAbi, functionName: 'castVote', args: [BigInt(1), 1] })}
+              style={{
+                background: isPending ? 'rgba(255,255,255,0.1)' : 'linear-gradient(135deg, #11998e, #38ef7d)',
+                color: '#fff', border: 'none', borderRadius: '12px',
+                padding: '12px', fontSize: '0.85rem', fontWeight: 600, cursor: isPending ? 'not-allowed' : 'pointer'
+              }}>
+              ✅ Vote YES
+            </button>
+            <button
+              disabled={isPending}
+              onClick={() => writeContract({ address: GOVERNOR_ADDRESS, abi: governorAbi, functionName: 'castVote', args: [BigInt(1), 0] })}
+              style={{
+                background: isPending ? 'rgba(255,255,255,0.1)' : 'linear-gradient(135deg, #eb3349, #f45c43)',
+                color: '#fff', border: 'none', borderRadius: '12px',
+                padding: '12px', fontSize: '0.85rem', fontWeight: 600, cursor: isPending ? 'not-allowed' : 'pointer'
+              }}>
+              ❌ Vote NO
+            </button>
+          </div>
+          {writeError && <p style={{ color: '#ff6b6b', fontSize: '0.75rem', marginTop: '10px' }}>{writeError.message}</p>}
+        </div>
+
+        {/* Protocol Stats */}
+        <div style={{
+          background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '1.5rem'
+        }}>
+          <h3 style={{ margin: '0 0 1.2rem', color: '#a78bfa', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            📊 Protocol
+          </h3>
+          {[
+            { label: 'Network', value: 'Arbitrum Sepolia', color: '#38ef7d' },
+            { label: 'Voting Delay', value: '1 day', color: '#fff' },
+            { label: 'Voting Period', value: '1 week', color: '#fff' },
+            { label: 'Quorum', value: '4%', color: '#fff' },
+            { label: 'Timelock', value: '2 days', color: '#fff' },
+          ].map(({ label, value, color }) => (
+            <div key={label} style={{
+              display: 'flex', justifyContent: 'space-between',
+              padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.06)'
+            }}>
+              <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}>{label}</span>
+              <span style={{ color, fontSize: '0.85rem', fontWeight: 500 }}>{value}</span>
+            </div>
+          ))}
+        </div>
+
       </div>
     </div>
   )
 }
-
-export default App
