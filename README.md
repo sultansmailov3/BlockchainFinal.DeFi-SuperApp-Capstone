@@ -1,4 +1,4 @@
-# DeFi Super-App ? Blockchain Technologies 2 Capstone
+# DeFi Super-App  Blockchain Technologies 2 Capstone
 
 A production-grade decentralized protocol built on Arbitrum Sepolia L2.
 AMM + ERC-4626 Vault + Chainlink Oracles + DAO Governance + The Graph indexing.
