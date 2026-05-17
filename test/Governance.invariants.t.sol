@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "forge-std/Test.sol";
+import "forge-std/StdInvariant.sol";
 
 import "../src/GovToken.sol";
 import "../src/ProtocolTimelock.sol";
 import "../src/ProtocolGovernor.sol";
 
-contract GovernanceInvariants is Test {
+contract GovernanceInvariants is StdInvariant {
     GovToken token;
     ProtocolTimelock timelock;
     ProtocolGovernor governor;
@@ -29,37 +29,42 @@ contract GovernanceInvariants is Test {
         timelock.grantRole(timelock.PROPOSER_ROLE(), address(governor));
         timelock.grantRole(timelock.EXECUTOR_ROLE(), address(governor));
         timelock.renounceRole(timelock.DEFAULT_ADMIN_ROLE(), address(this));
+
+        // Limit fuzz calls to the governance token.
+        // This prevents Foundry from directly calling timelock self-only functions
+        // such as updateDelay() with the timelock address as msg.sender.
+        targetContract(address(token));
     }
 
     function invariant_GovTokenTotalSupplyConstant() public view {
-        assertEq(token.totalSupply(), initialSupply);
+        assert(token.totalSupply() == initialSupply);
     }
 
     function invariant_TimelockDelayAlwaysTwoDays() public view {
-        assertEq(timelock.getMinDelay(), 2 days);
+        assert(timelock.getMinDelay() == 2 days);
     }
 
     function invariant_GovernorVotingDelayAlwaysOneDay() public view {
-        assertEq(governor.votingDelay(), 7200);
+        assert(governor.votingDelay() == 7200);
     }
 
     function invariant_GovernorVotingPeriodAlwaysOneWeek() public view {
-        assertEq(governor.votingPeriod(), 50400);
+        assert(governor.votingPeriod() == 50400);
     }
 
     function invariant_GovernorQuorumAlwaysFourPercent() public view {
-        assertEq(governor.quorumNumerator(), 4);
+        assert(governor.quorumNumerator() == 4);
     }
 
     function invariant_GovernorKeepsProposerRole() public view {
-        assertTrue(timelock.hasRole(timelock.PROPOSER_ROLE(), address(governor)));
+        assert(timelock.hasRole(timelock.PROPOSER_ROLE(), address(governor)));
     }
 
     function invariant_GovernorKeepsExecutorRole() public view {
-        assertTrue(timelock.hasRole(timelock.EXECUTOR_ROLE(), address(governor)));
+        assert(timelock.hasRole(timelock.EXECUTOR_ROLE(), address(governor)));
     }
 
     function invariant_DeployerDoesNotKeepAdminRole() public view {
-        assertFalse(timelock.hasRole(timelock.DEFAULT_ADMIN_ROLE(), address(this)));
+        assert(!timelock.hasRole(timelock.DEFAULT_ADMIN_ROLE(), address(this)));
     }
 }
