@@ -1,159 +1,226 @@
-# DeFi Super-App  Blockchain Technologies 2 Capstone
+# DeFi Super-App — Full-Stack Decentralized Protocol
 
-A production-grade decentralized protocol built on Arbitrum Sepolia L2.
-AMM + ERC-4626 Vault + Chainlink Oracles + DAO Governance + The Graph indexing.
+A full-stack decentralized protocol built for the Blockchain Technologies 2 Final Project.
 
-## Architecture
+The project combines DeFi primitives, token standards, Chainlink-style oracle integration, DAO governance, upgradeability, The Graph indexing, frontend interaction, security testing, CI, and documentation.
 
-| Contract | Description |
+## Project Scenario
+
+**Option A — DeFi Super-App**
+
+The protocol includes:
+
+- Constant-product AMM
+- ERC-4626 tokenized vault
+- ERC20Votes + ERC20Permit governance token
+- ERC-721 protocol NFT
+- Chainlink-style price oracle with staleness protection
+- OpenZeppelin Governor + Timelock governance
+- UUPS upgradeable protocol module
+- Factory contract using CREATE and CREATE2
+- The Graph subgraph
+- React / Vite / Wagmi frontend
+- Foundry test suite with unit, fuzz, invariant, and fork tests
+- GitHub Actions CI
+- Slither static analysis
+- Security audit report
+- Gas and coverage reports
+
+---
+
+## Repository Structure
+
+```text
+src/                 Smart contracts
+test/                Foundry tests
+script/              Deployment and verification scripts
+frontend/            React + Vite + Wagmi frontend dApp
+subgraph/            The Graph subgraph configuration
+docs/                Architecture, audit, and presentation documents
+reports/             Gas, coverage, and Slither reports
+deployments/         L2 deployment addresses and explorer links
+.github/workflows/   GitHub Actions CI
+
+
+---
+
+## Documentation
+
+Main documentation files:
+
+---
+
+## Documentation
+
+Main documentation files:
+
+| Document | Path |
 |---|---|
-| AMM.sol | Constant-product AMM (x*y=k), 0.3% fee, LP tokens, ReentrancyGuard |
-| Vault.sol | ERC-4626 tokenized yield vault |
-| GovToken.sol | ERC20Votes + ERC20Permit governance token (1M supply) |
-| ProtocolGovernor.sol | OpenZeppelin Governor, 4% quorum, 1 week voting period |
-| ProtocolTimelock.sol | 2-day timelock for all governance actions |
-| PriceOracle.sol | Chainlink price feed wrapper with staleness check (1hr) |
-| ProtocolV1.sol | UUPS upgradeable proxy implementation |
-| Factory.sol | CREATE + CREATE2 pair factory |
+| Architecture Document | `docs/architecture.md` |
+| Security Audit Report | `docs/security-audit-report.md` |
+| Additional Audit Notes | `docs/audit.md` |
+| Gas Report | `reports/gas-report.txt` |
+| Coverage Report | `reports/coverage-report.txt` |
+| Slither Report | `reports/slither-report.txt` |
+| Final Presentation | `docs/final-presentation.pdf` |
 
-## Quick Start
+---
 
-### Prerequisites
-- Foundry
-- Node.js 18+
-- Python 3.x (for Slither)
+## How to Run
 
-### Install
+### Build contracts
 
-git clone https://github.com/sultansmailov3/BlockchainFinal.DeFi-SuperApp-Capstone
-cd BlockchainFinal.DeFi-SuperApp-Capstone
-forge install
+```bash
 forge build
+```
 
-### Run Tests
+### Run tests
 
-forge test -vvv
+```bash
+forge test -vv
+```
 
-### Run Coverage
+### Run fast invariant tests
 
-forge coverage
+```bash
+FOUNDRY_INVARIANT_RUNS=1 FOUNDRY_INVARIANT_DEPTH=1 forge test -vv
+```
 
-### Run Slither
+### Run fork tests
 
-pip install slither-analyzer
-slither .
+Fork tests require a mainnet RPC URL:
 
-### Deploy to Arbitrum Sepolia
+```bash
+export MAINNET_RPC_URL="YOUR_MAINNET_RPC_URL"
+forge test --match-path test/Fork.t.sol -vv
+```
 
-cp .env.example .env
-# Add your PRIVATE_KEY to .env
-forge script script/Deploy.s.sol --rpc-url https://sepolia-rollup.arbitrum.io/rpc --broadcast --verify
+---
 
 ## Frontend
 
-cd frontend
-npm install
-npm run dev
+Frontend source code is located in:
 
-Open http://localhost:5173
-
-## Testing
-
-| Type | Count | Description |
-|---|---|---|
-| Unit | 14+ | Every public function including revert paths |
-| Invariant | 1 | AMM k-invariant never decreases |
-| Fuzz | 1 | AMM swap fuzz testing |
-
-forge test -vvv
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
+```text
+frontend/
 ```
-## Security & DevOps Work
 
-This project includes additional Security & DevOps work focused on testing, static analysis, CI, and reporting.
-
-### Foundry Testing
-
-The test suite includes:
-
-- Governance lifecycle tests
-- ERC20Votes governance token tests
-- Timelock access-control tests
-- Governance invariant tests
-- Ethereum Mainnet fork tests
-
-### Invariant Tests
-
-Governance invariants verify that critical protocol assumptions remain stable:
-
-- GovToken total supply remains constant
-- Timelock delay remains 2 days
-- Governor voting delay remains 1 day
-- Governor voting period remains 1 week
-- Governor quorum remains 4%
-- Governor keeps proposer and executor roles
-- Deployer does not keep admin role
-
-### Fork Tests
-
-Fork tests validate interaction with real Ethereum Mainnet contracts:
-
-- USDC decimals check
-- USDC total supply check
-- Chainlink ETH/USD price feed check
-
-To run fork tests:
+Run frontend:
 
 ```bash
-export MAINNET_RPC_URL="YOUR_ETHEREUM_MAINNET_RPC_URL"
-forge test --match-path test/Fork.t.sol -vv
-CI Pipeline
+cd frontend
+npm install
+npm run build
+npm run dev
+```
 
-GitHub Actions CI runs on push and pull request.
+---
 
-The CI pipeline includes:
+## Subgraph
 
-forge fmt --check
-forge build
-forge test
-forge coverage
-Slither static analysis
+Subgraph files are located in:
 
-Fork tests require the repository secret:
+```text
+subgraph/
+```
 
-MAINNET_RPC_URL
-Slither Static Analysis
+Important files:
 
-Slither is configured in CI to fail only on High and Medium severity findings:
+```text
+subgraph/subgraph.yaml
+subgraph/schema.graphql
+subgraph/src/amm.ts
+subgraph/src/governor.ts
+```
 
-slither . --exclude-dependencies --fail-high --fail-medium
+Indexed entities:
 
-A local Slither report is available at:
+- `Swap`
+- `LiquidityPosition`
+- `Proposal`
+- `Vote`
 
-reports/slither-report.txt
-Reports
+---
 
-The following reports are included:
+## L2 Deployment
 
-docs/security-audit-report.md
-reports/slither-report.txt
-reports/gas-report.txt
-reports/coverage-report.txt
-Security Audit Summary
+Deployment scripts:
 
-The audit report documents:
+```text
+script/Deploy.s.sol
+script/Verify.s.sol
+```
 
-Scope
-Methodology
-Automated testing
-Static analysis results
-Findings summary
-Governance security review
-Timelock security review
-Oracle security review
-Accepted risks
-Recommendations
+Target network:
+
+```text
+Base Sepolia
+```
+
+Deployment command:
+
+```bash
+source .env
+
+forge script script/Deploy.s.sol:Deploy \
+  --rpc-url $BASE_SEPOLIA_RPC \
+  --broadcast \
+  -vvv
+```
+
+Deployment addresses should be stored in:
+
+```text
+deployments/base-sepolia.md
+```
+
+Current status:
+
+```text
+Deployment script is included. Verified L2 addresses must be added after deployment.
+```
+
+---
+
+## Final Presentation
+
+Final presentation slide deck:
+
+```text
+docs/final-presentation.pdf
+```
+
+---
+
+## Final Submission Checklist
+
+- [x] Smart contracts
+- [x] AMM
+- [x] ERC-4626 Vault
+- [x] ERC20Votes + ERC20Permit governance token
+- [x] ERC-721 NFT
+- [x] Factory with CREATE and CREATE2
+- [x] UUPS upgradeability V1 → V2
+- [x] Chainlink-style oracle with staleness check
+- [x] Governor + Timelock governance
+- [x] Unit tests
+- [x] Fuzz tests
+- [x] Invariant tests
+- [x] Fork tests
+- [x] 80+ total tests
+- [x] Frontend dApp
+- [x] The Graph subgraph files
+- [x] GitHub Actions CI
+- [x] Slither report
+- [x] Gas report
+- [x] Coverage report
+- [x] Security audit report
+- [x] Architecture document
+- [x] Final presentation PDF
+- [ ] L2 verified explorer links
+
+---
+
+## License
+
+MIT
