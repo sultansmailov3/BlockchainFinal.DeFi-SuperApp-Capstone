@@ -18,11 +18,11 @@ contract GovTokenTest is Test {
     }
 
     function test_name() public view {
-        assertEq(token.name(), "Governance Token");
+        assertEq(token.name(), "DeFi Super-App Gov");
     }
 
     function test_symbol() public view {
-        assertEq(token.symbol(), "GOV");
+        assertEq(token.symbol(), "DSG");
     }
 
     function test_decimals() public view {

@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "@tanstack/react-query": "^5.100.10",
-    "viem": "^2.49.3",
-    "wagmi": "^3.6.15"
-  }
-}

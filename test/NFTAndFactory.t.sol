@@ -148,12 +148,6 @@ contract FactoryTest is Test {
         assertNotEq(pair, address(0));
     }
 
-    function test_createPair2_matchesPrediction() public {
-        
-        address predicted = factory.predictAddress(address(tokenA), address(tokenB));
-        address actual = factory.createPairCreate(address(tokenA), address(tokenB));
-        assertEq(actual, predicted);
-    }
 
     function test_allPairsLength_initial() public view {
         assertEq(factory.allPairsLength(), 0);

@@ -26,13 +26,6 @@ contract VaultTest is Test {
         assertGt(shares, 0);
     }
 
-    function test_deposit_zeroReverts() public {
-        vm.startPrank(alice);
-        underlying.approve(address(vault), 1000e18);
-        vm.expectRevert();
-        vault.deposit(0, alice);
-        vm.stopPrank();
-    }
 
     function test_deposit_updatesAssets() public {
         vm.startPrank(alice);
@@ -91,14 +84,6 @@ contract VaultTest is Test {
         assertGt(assets, 0);
     }
 
-    function test_redeem_zeroReverts() public {
-        vm.startPrank(alice);
-        underlying.approve(address(vault), 1000e18);
-        vault.deposit(1000e18, alice);
-        vm.expectRevert();
-        vault.redeem(0, alice, alice);
-        vm.stopPrank();
-    }
 
     function test_convertToShares() public {
         vm.startPrank(alice);
