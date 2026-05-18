@@ -1,125 +1,62 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.24;
 
-import {Test} from "forge-std/Test.sol";
-import {GovToken} from "../src/GovToken.sol";
-import {ProtocolGovernor} from "../src/ProtocolGovernor.sol";
-import {ProtocolTimelock} from "../src/ProtocolTimelock.sol";
-import {IGovernor} from "@openzeppelin/contracts/governance/IGovernor.sol";
+import "forge-std/Test.sol";
+import "../src/GovToken.sol";
+import "../src/ProtocolTimelock.sol";
+import "../src/ProtocolGovernor.sol";
 
 contract GovernanceTest is Test {
-    GovToken public token;
-    ProtocolGovernor public governor;
-    ProtocolTimelock public timelock;
+    GovToken token;
+    ProtocolTimelock timelock;
+    ProtocolGovernor governor;
 
-    address alice = makeAddr("alice");
-    address bob = makeAddr("bob");
+    address voter = address(1);
+    address treasury = address(2);
 
     function setUp() public {
-        token = new GovToken(address(this));
+        token = new GovToken(voter);
 
-        address[] memory proposers = new address[](1);
-        address[] memory executors = new address[](1);
-        proposers[0] = address(0);
-        executors[0] = address(0);
-        timelock = new ProtocolTimelock(proposers, executors, address(this));
+        address[] memory proposers = new address[](0);
+        address[] memory executors = new address[](0);
+        timelock = new ProtocolTimelock(2 days, proposers, executors, address(this));
+
         governor = new ProtocolGovernor(token, timelock);
 
-        bytes32 PROPOSER_ROLE = timelock.PROPOSER_ROLE();
-        bytes32 EXECUTOR_ROLE = timelock.EXECUTOR_ROLE();
-        timelock.grantRole(PROPOSER_ROLE, address(governor));
-        timelock.grantRole(EXECUTOR_ROLE, address(0));
+        timelock.grantRole(timelock.PROPOSER_ROLE(), address(governor));
+        timelock.grantRole(timelock.EXECUTOR_ROLE(), address(governor));
+        timelock.renounceRole(timelock.DEFAULT_ADMIN_ROLE(), address(this));
 
-        // Give alice enough tokens to propose
-        token.transfer(alice, 100_000e18);
-        token.transfer(bob, 100_000e18);
-
-        vm.prank(alice);
-        token.delegate(alice);
-        vm.prank(bob);
-        token.delegate(bob);
-
-        vm.roll(block.number + 1);
+        vm.prank(voter);
+        token.delegate(voter);
     }
 
-    function test_governorName() public view {
-        assertEq(governor.name(), "ProtocolGovernor");
-    }
-
-    function test_votingDelay() public view {
+    function test_GovernorParams() public view {
         assertEq(governor.votingDelay(), 7200);
-    }
-
-    function test_votingPeriod() public view {
         assertEq(governor.votingPeriod(), 50400);
-    }
-
-    function test_quorumNumerator() public view {
         assertEq(governor.quorumNumerator(), 4);
     }
 
-    function test_propose() public {
+    function test_ProposeAndVote() public {
+        vm.roll(block.number + 1);
+
         address[] memory targets = new address[](1);
         uint256[] memory values = new uint256[](1);
         bytes[] memory calldatas = new bytes[](1);
-        targets[0] = address(token);
+        targets[0] = treasury;
         values[0] = 0;
         calldatas[0] = "";
 
-        vm.prank(alice);
-        uint256 proposalId = governor.propose(targets, values, calldatas, "Proposal #1");
-        assertGt(proposalId, 0);
-    }
+        vm.prank(voter);
+        uint256 proposalId = governor.propose(targets, values, calldatas, "Test proposal");
 
-    function test_proposalState_pending() public {
-        address[] memory targets = new address[](1);
-        uint256[] memory values = new uint256[](1);
-        bytes[] memory calldatas = new bytes[](1);
-        targets[0] = address(token);
+        vm.roll(block.number + 7201);
 
-        vm.prank(alice);
-        uint256 proposalId = governor.propose(targets, values, calldatas, "Test");
-        assertEq(uint256(governor.state(proposalId)), uint256(IGovernor.ProposalState.Pending));
-    }
-
-    function test_castVote() public {
-        address[] memory targets = new address[](1);
-        uint256[] memory values = new uint256[](1);
-        bytes[] memory calldatas = new bytes[](1);
-        targets[0] = address(token);
-
-        vm.prank(alice);
-        uint256 proposalId = governor.propose(targets, values, calldatas, "Vote test");
-
-        vm.roll(block.number + governor.votingDelay() + 1);
-
-        vm.prank(alice);
+        vm.prank(voter);
         governor.castVote(proposalId, 1);
 
-        (uint256 against, uint256 forVotes,) = governor.proposalVotes(proposalId);
-        assertGt(forVotes, 0);
-        assertEq(against, 0);
-    }
+        vm.roll(block.number + 50401);
 
-    function test_castVote_against() public {
-        address[] memory targets = new address[](1);
-        uint256[] memory values = new uint256[](1);
-        bytes[] memory calldatas = new bytes[](1);
-        targets[0] = address(token);
-
-        vm.prank(alice);
-        uint256 proposalId = governor.propose(targets, values, calldatas, "Against test");
-
-        vm.roll(block.number + governor.votingDelay() + 1);
-
-        vm.prank(bob);
-        governor.castVote(proposalId, 0);
-
-        (uint256 against,,) = governor.proposalVotes(proposalId);
-        assertGt(against, 0);
-    }
-
-    function test_timelockDelay() public view {
-        assertEq(timelock.getMinDelay(), 2 days);
+        assertEq(uint256(governor.state(proposalId)), 4);
     }
 }

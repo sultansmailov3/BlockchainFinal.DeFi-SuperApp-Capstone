@@ -1,0 +1,189 @@
+'forge clean' running (wd: /workspaces/BlockchainFinal.DeFi-SuperApp-Capstone)
+'forge config --json' running
+'forge build --build-info --skip ./test/** ./script/** --force' running (wd: /workspaces/BlockchainFinal.DeFi-SuperApp-Capstone)
+INFO:Detectors:
+Detector: unused-return
+PriceOracle.getPrice() (src/PriceOracle.sol#19-24) ignores return value by (None,price,None,updatedAt,None) = feed.latestRoundData() (src/PriceOracle.sol#20)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unused-return
+INFO:Detectors:
+Detector: shadowing-local
+AMM.addLiquidity(uint256,uint256)._totalSupply (src/AMM.sol#46) shadows:
+	- ERC20._totalSupply (lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol#34) (state variable)
+GovToken.nonces(address).owner (src/GovToken.sol#23) shadows:
+	- Ownable.owner() (lib/openzeppelin-contracts/contracts/access/Ownable.sol#56-58) (function)
+ProtocolGovernor.constructor(IVotes,TimelockController)._token (src/ProtocolGovernor.sol#19) shadows:
+	- GovernorVotes._token (lib/openzeppelin-contracts/contracts/governance/extensions/GovernorVotes.sol#17) (state variable)
+ProtocolGovernor.constructor(IVotes,TimelockController)._timelock (src/ProtocolGovernor.sol#19) shadows:
+	- GovernorTimelockControl._timelock (lib/openzeppelin-contracts/contracts/governance/extensions/GovernorTimelockControl.sol#25) (state variable)
+ProtocolV1.initialize(address).owner (src/ProtocolV1.sol#16) shadows:
+	- OwnableUpgradeable.owner() (lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol#73-76) (function)
+DeFiVault.constructor(IERC20,address).asset (src/Vault.sol#9) shadows:
+	- ERC4626.asset() (lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC4626.sol#117-119) (function)
+	- IERC4626.asset() (lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol#30) (function)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#local-variable-shadowing
+INFO:Detectors:
+Detector: timestamp
+PriceOracle.getPrice() (src/PriceOracle.sol#19-24) uses timestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(block.timestamp - updatedAt <= MAX_STALENESS,Stale price) (src/PriceOracle.sol#22)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+INFO:Detectors:
+Detector: pragma
+10 different versions of Solidity are used:
+	- Version constraint ^0.8.20 is used by:
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/access/AccessControl.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/access/Ownable.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/governance/TimelockController.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/proxy/utils/Initializable.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/token/ERC1155/utils/ERC1155Holder.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/token/ERC721/utils/ERC721Holder.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/Address.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/Context.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/Errors.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/LowLevelCall.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/Nonces.sol#3)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/Panic.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/ShortStrings.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#5)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/introspection/ERC165.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/math/Math.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/math/SafeCast.sol#5)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/math/SignedMath.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/structs/Checkpoints.sol#5)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/structs/DoubleEndedQueue.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/types/Time.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol#3)
+		-^0.8.20 (lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol#4)
+		-^0.8.20 (src/AMM.sol#2)
+		-^0.8.20 (src/GovToken.sol#2)
+		-^0.8.20 (src/Vault.sol#2)
+	- Version constraint >=0.8.4 is used by:
+		->=0.8.4 (lib/openzeppelin-contracts/contracts/access/IAccessControl.sol#4)
+		->=0.8.4 (lib/openzeppelin-contracts/contracts/governance/IGovernor.sol#4)
+		->=0.8.4 (lib/openzeppelin-contracts/contracts/governance/utils/IVotes.sol#4)
+		->=0.8.4 (lib/openzeppelin-contracts/contracts/interfaces/IERC5805.sol#4)
+		->=0.8.4 (lib/openzeppelin-contracts/contracts/interfaces/draft-IERC6093.sol#4)
+	- Version constraint ^0.8.24 is used by:
+		-^0.8.24 (lib/openzeppelin-contracts/contracts/governance/Governor.sol#4)
+		-^0.8.24 (lib/openzeppelin-contracts/contracts/governance/extensions/GovernorCountingSimple.sol#4)
+		-^0.8.24 (lib/openzeppelin-contracts/contracts/governance/extensions/GovernorSettings.sol#4)
+		-^0.8.24 (lib/openzeppelin-contracts/contracts/governance/extensions/GovernorTimelockControl.sol#4)
+		-^0.8.24 (lib/openzeppelin-contracts/contracts/governance/extensions/GovernorVotes.sol#4)
+		-^0.8.24 (lib/openzeppelin-contracts/contracts/governance/extensions/GovernorVotesQuorumFraction.sol#4)
+		-^0.8.24 (lib/openzeppelin-contracts/contracts/governance/utils/Votes.sol#4)
+		-^0.8.24 (lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Permit.sol#4)
+		-^0.8.24 (lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Votes.sol#4)
+		-^0.8.24 (lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC4626.sol#4)
+		-^0.8.24 (lib/openzeppelin-contracts/contracts/utils/Bytes.sol#4)
+		-^0.8.24 (lib/openzeppelin-contracts/contracts/utils/ERC6372Utils.sol#3)
+		-^0.8.24 (lib/openzeppelin-contracts/contracts/utils/Memory.sol#4)
+		-^0.8.24 (lib/openzeppelin-contracts/contracts/utils/Strings.sol#4)
+		-^0.8.24 (lib/openzeppelin-contracts/contracts/utils/cryptography/EIP712.sol#4)
+		-^0.8.24 (lib/openzeppelin-contracts/contracts/utils/cryptography/MessageHashUtils.sol#4)
+		-^0.8.24 (lib/openzeppelin-contracts/contracts/utils/cryptography/SignatureChecker.sol#4)
+		-^0.8.24 (src/PriceOracle.sol#2)
+		-^0.8.24 (src/ProtocolGovernor.sol#2)
+		-^0.8.24 (src/ProtocolTimelock.sol#2)
+		-^0.8.24 (src/ProtocolV1.sol#2)
+		-^0.8.24 (src/ProtocolV2.sol#2)
+		-^0.8.24 (src/mocks/MockAggregator.sol#2)
+	- Version constraint >=0.5.0 is used by:
+		->=0.5.0 (lib/openzeppelin-contracts/contracts/interfaces/IERC1271.sol#4)
+		->=0.5.0 (lib/openzeppelin-contracts/contracts/interfaces/IERC7913.sol#4)
+		->=0.5.0 (lib/openzeppelin-contracts/contracts/token/ERC721/IERC721Receiver.sol#4)
+	- Version constraint >=0.6.2 is used by:
+		->=0.6.2 (lib/openzeppelin-contracts/contracts/interfaces/IERC1363.sol#4)
+		->=0.6.2 (lib/openzeppelin-contracts/contracts/interfaces/IERC20Metadata.sol#4)
+		->=0.6.2 (lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol#4)
+		->=0.6.2 (lib/openzeppelin-contracts/contracts/token/ERC1155/IERC1155Receiver.sol#4)
+		->=0.6.2 (lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol#4)
+	- Version constraint >=0.4.16 is used by:
+		->=0.4.16 (lib/openzeppelin-contracts/contracts/interfaces/IERC165.sol#4)
+		->=0.4.16 (lib/openzeppelin-contracts/contracts/interfaces/IERC20.sol#4)
+		->=0.4.16 (lib/openzeppelin-contracts/contracts/interfaces/IERC5267.sol#4)
+		->=0.4.16 (lib/openzeppelin-contracts/contracts/interfaces/IERC6372.sol#4)
+		->=0.4.16 (lib/openzeppelin-contracts/contracts/interfaces/draft-IERC1822.sol#4)
+		->=0.4.16 (lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol#4)
+		->=0.4.16 (lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol#4)
+		->=0.4.16 (lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol#4)
+		->=0.4.16 (lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol#4)
+	- Version constraint >=0.4.11 is used by:
+		->=0.4.11 (lib/openzeppelin-contracts/contracts/interfaces/IERC1967.sol#4)
+	- Version constraint ^0.8.21 is used by:
+		-^0.8.21 (lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Utils.sol#4)
+	- Version constraint ^0.8.22 is used by:
+		-^0.8.22 (lib/openzeppelin-contracts/contracts/proxy/utils/UUPSUpgradeable.sol#4)
+		-^0.8.22 (lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol#3)
+	- Version constraint ^0.8.13 is used by:
+		-^0.8.13 (src/Counter.sol#2)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#different-pragma-directives-are-used
+INFO:Detectors:
+Detector: solc-version
+Version constraint ^0.8.20 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- VerbatimInvalidDeduplication
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess.
+It is used by:
+	- ^0.8.20 (lib/openzeppelin-contracts/contracts/access/AccessControl.sol#4)
+	- ^0.8.20 (lib/openzeppelin-contracts/contracts/access/Ownable.sol#4)
+	- ^0.8.20 (lib/openzeppelin-contracts/contracts/governance/TimelockController.sol#4)
+	- ^0.8.20 (lib/openzeppelin-contracts/contracts/proxy/utils/Initializable.sol#4)
+	- ^0.8.20 (lib/openzeppelin-contracts/contracts/token/ERC1155/utils/ERC1155Holder.sol#4)
+	- ^0.8.20 (lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol#4)
+	- ^0.8.20 (lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol#4)
+	- ^0.8.20 (lib/openzeppelin-contracts/contracts/token/ERC721/utils/ERC721Holder.sol#4)
+	- ^0.8.20 (lib/openzeppelin-contracts/contracts/utils/Address.sol#4)
+	- ^0.8.20 (lib/openzeppelin-contracts/contracts/utils/Context.sol#4)
+	- ^0.8.20 (lib/openzeppelin-contracts/contracts/utils/Errors.sol#4)
+	- ^0.8.20 (lib/openzeppelin-contracts/contracts/utils/LowLevelCall.sol#4)
+	- ^0.8.20 (lib/openzeppelin-contracts/contracts/utils/Nonces.sol#3)
+	- ^0.8.20 (lib/openzeppelin-contracts/contracts/utils/Panic.sol#4)
+	- ^0.8.20 (lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol#4)
+	- ^0.8.20 (lib/openzeppelin-contracts/contracts/utils/ShortStrings.sol#4)
+	- ^0.8.20 (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#5)
+	- ^0.8.20 (lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol#4)
+	- ^0.8.20 (lib/openzeppelin-contracts/contracts/utils/introspection/ERC165.sol#4)
+	- ^0.8.20 (lib/openzeppelin-contracts/contracts/utils/math/Math.sol#4)
+	- ^0.8.20 (lib/openzeppelin-contracts/contracts/utils/math/SafeCast.sol#5)
+	- ^0.8.20 (lib/openzeppelin-contracts/contracts/utils/math/SignedMath.sol#4)
+	- ^0.8.20 (lib/openzeppelin-contracts/contracts/utils/structs/Checkpoints.sol#5)
+	- ^0.8.20 (lib/openzeppelin-contracts/contracts/utils/structs/DoubleEndedQueue.sol#4)
+	- ^0.8.20 (lib/openzeppelin-contracts/contracts/utils/types/Time.sol#4)
+	- ^0.8.20 (lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol#4)
+	- ^0.8.20 (lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol#3)
+	- ^0.8.20 (lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol#4)
+	- ^0.8.20 (src/AMM.sol#2)
+	- ^0.8.20 (src/GovToken.sol#2)
+	- ^0.8.20 (src/Vault.sol#2)
+Version constraint ^0.8.13 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- VerbatimInvalidDeduplication
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess
+	- StorageWriteRemovalBeforeConditionalTermination
+	- AbiReencodingHeadOverflowWithStaticArrayCleanup
+	- DirtyBytesArrayToStorage
+	- InlineAssemblyMemorySideEffects
+	- DataLocationChangeInInternalOverride
+	- NestedCalldataArrayAbiReencodingSizeValidation.
+It is used by:
+	- ^0.8.13 (src/Counter.sol#2)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-versions-of-solidity
+INFO:Detectors:
+Detector: missing-inheritance
+MockAggregator (src/mocks/MockAggregator.sol#4-25) should inherit from AggregatorV3Interface (src/PriceOracle.sol#4-9)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-inheritance
+INFO:Detectors:
+Detector: naming-convention
+Parameter ProtocolV1.setValue(uint256)._value (src/ProtocolV1.sol#20) is not in mixedCase
+Parameter ProtocolV2.initializeV2(string)._name (src/ProtocolV2.sol#10) is not in mixedCase
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#conformance-to-solidity-naming-conventions
+INFO:Detectors:
+Detector: immutable-states
+PriceOracle.feed (src/PriceOracle.sol#12) should be immutable 
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#state-variables-that-could-be-declared-immutable
+INFO:Slither:. analyzed (79 contracts with 101 detectors), 15 result(s) found

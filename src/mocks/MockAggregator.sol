@@ -1,36 +1,25 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.24;
 
-/// @notice Mock Chainlink aggregator for tests.
 contract MockAggregator {
     int256 private _price;
     uint256 private _updatedAt;
-    uint8 private _decimals;
 
-    constructor(int256 initialPrice, uint8 decimals_) {
+    constructor(int256 initialPrice) {
         _price = initialPrice;
         _updatedAt = block.timestamp;
-        _decimals = decimals_;
     }
 
-    function setPrice(int256 price) external {
-        _price = price;
+    function setPrice(int256 newPrice) external {
+        _price = newPrice;
         _updatedAt = block.timestamp;
     }
 
-    function setUpdatedAt(uint256 updatedAt) external {
-        _updatedAt = updatedAt;
+    function setUpdatedAt(uint256 timestamp) external {
+        _updatedAt = timestamp;
     }
 
-    function latestRoundData()
-        external
-        view
-        returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound)
-    {
+    function latestRoundData() external view returns (uint80, int256, uint256, uint256, uint80) {
         return (1, _price, block.timestamp, _updatedAt, 1);
-    }
-
-    function decimals() external view returns (uint8) {
-        return _decimals;
     }
 }

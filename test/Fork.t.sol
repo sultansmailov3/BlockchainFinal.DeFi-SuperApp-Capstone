@@ -1,38 +1,49 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.24;
 
-import {Test} from "forge-std/Test.sol";
-import {PriceOracle} from "../src/PriceOracle.sol";
+import "forge-std/Test.sol";
 
-interface IChainlinkFeed {
-    function latestRoundData() external view returns (uint80, int256, uint256, uint256, uint80);
+interface IERC20Metadata {
+    function decimals() external view returns (uint8);
+    function totalSupply() external view returns (uint256);
+    function symbol() external view returns (string memory);
+}
+
+interface AggregatorV3Interface {
+    function latestRoundData()
+        external
+        view
+        returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound);
+
     function decimals() external view returns (uint8);
 }
 
 contract ForkTest is Test {
-    // Arbitrum Sepolia ETH/USD feed
-    address constant ARB_SEP_ETH_USD = 0xd30e2101a97dcbAeBCBC04F14C3f624E67A35165;
+    // Ethereum mainnet addresses
+    address constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+    address constant CHAINLINK_ETH_USD = 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419;
 
     function setUp() public {
-        string memory rpc = vm.envOr("ARBITRUM_SEPOLIA_RPC", string("https://sepolia-rollup.arbitrum.io/rpc"));
-        vm.createSelectFork(rpc);
+        string memory rpcUrl = vm.envString("MAINNET_RPC_URL");
+        vm.createSelectFork(rpcUrl);
     }
 
-    function test_fork_chainlinkFeedExists() public view {
-        IChainlinkFeed feed = IChainlinkFeed(ARB_SEP_ETH_USD);
-        uint8 dec = feed.decimals();
-        assertEq(dec, 8);
+    function testFork_USDCHasSixDecimals() public view {
+        uint8 decimals = IERC20Metadata(USDC).decimals();
+        assertEq(decimals, 6);
     }
 
-    function test_fork_chainlinkReturnsPositivePrice() public view {
-        IChainlinkFeed feed = IChainlinkFeed(ARB_SEP_ETH_USD);
-        (, int256 price,,,) = feed.latestRoundData();
-        assertGt(price, 0);
+    function testFork_USDCTotalSupplyGreaterThanZero() public view {
+        uint256 supply = IERC20Metadata(USDC).totalSupply();
+        assertGt(supply, 0);
     }
 
-    function test_fork_priceOracleWithRealFeed() public {
-        PriceOracle oracle = new PriceOracle(ARB_SEP_ETH_USD);
-        int256 price = oracle.getPrice();
-        assertGt(price, 0);
+    function testFork_ChainlinkETHUSDReturnsValidPrice() public view {
+        AggregatorV3Interface feed = AggregatorV3Interface(CHAINLINK_ETH_USD);
+
+        (, int256 answer,, uint256 updatedAt,) = feed.latestRoundData();
+
+        assertGt(answer, 0);
+        assertGt(updatedAt, 0);
     }
 }

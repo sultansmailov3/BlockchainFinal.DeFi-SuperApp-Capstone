@@ -1,22 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.24;
 
-import {Governor} from "@openzeppelin/contracts/governance/Governor.sol";
-import {GovernorSettings} from "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
-import {GovernorCountingSimple} from "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
-import {GovernorVotes} from "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
-import {
-    GovernorVotesQuorumFraction
-} from "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
-import {GovernorTimelockControl} from "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
-import {TimelockController} from "@openzeppelin/contracts/governance/TimelockController.sol";
-import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
+import "@openzeppelin/contracts/governance/Governor.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
 
-/// @notice Full OZ Governor stack.
-/// Voting delay: 7200 blocks (~1 day on Arbitrum)
-/// Voting period: 50400 blocks (~1 week)
-/// Quorum: 4%
-/// Proposal threshold: 1% of total supply
 contract ProtocolGovernor is
     Governor,
     GovernorSettings,
@@ -25,12 +16,12 @@ contract ProtocolGovernor is
     GovernorVotesQuorumFraction,
     GovernorTimelockControl
 {
-    constructor(IVotes token, TimelockController timelock)
+    constructor(IVotes _token, TimelockController _timelock)
         Governor("ProtocolGovernor")
-        GovernorSettings(7200, 50400, 10_000e18)
-        GovernorVotes(token)
+        GovernorSettings(7200, 50400, 1e18)
+        GovernorVotes(_token)
         GovernorVotesQuorumFraction(4)
-        GovernorTimelockControl(timelock)
+        GovernorTimelockControl(_timelock)
     {}
 
     function votingDelay() public view override(Governor, GovernorSettings) returns (uint256) {
@@ -41,12 +32,12 @@ contract ProtocolGovernor is
         return super.votingPeriod();
     }
 
-    function quorum(uint256 blockNumber) public view override(Governor, GovernorVotesQuorumFraction) returns (uint256) {
-        return super.quorum(blockNumber);
-    }
-
     function proposalThreshold() public view override(Governor, GovernorSettings) returns (uint256) {
         return super.proposalThreshold();
+    }
+
+    function quorum(uint256 blockNumber) public view override(Governor, GovernorVotesQuorumFraction) returns (uint256) {
+        return super.quorum(blockNumber);
     }
 
     function state(uint256 proposalId) public view override(Governor, GovernorTimelockControl) returns (ProposalState) {

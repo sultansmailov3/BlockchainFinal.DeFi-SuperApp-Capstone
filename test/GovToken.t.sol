@@ -6,99 +6,107 @@ import {GovToken} from "../src/GovToken.sol";
 
 contract GovTokenTest is Test {
     GovToken public token;
-    address alice = makeAddr("alice");
-    address bob = makeAddr("bob");
+
+    address public owner;
+    address public alice;
+    address public bob;
+
+    uint256 public alicePrivateKey;
+
+    uint256 public constant INITIAL_SUPPLY = 1_000_000 ether;
+    uint256 public constant TRANSFER_AMOUNT = 100 ether;
 
     function setUp() public {
-        token = new GovToken(address(this));
+        owner = address(this);
+        bob = makeAddr("bob");
+
+        (alice, alicePrivateKey) = makeAddrAndKey("alice");
+
+        token = new GovToken(owner);
     }
 
-    function test_totalSupply() public view {
-        assertEq(token.totalSupply(), 1_000_000e18);
+    function test_InitialSupply() public view {
+        assertEq(token.totalSupply(), INITIAL_SUPPLY);
+        assertEq(token.balanceOf(owner), INITIAL_SUPPLY);
     }
 
-    function test_name() public view {
+    function test_NameAndSymbol() public view {
         assertEq(token.name(), "DeFi Super-App Gov");
-    }
-
-    function test_symbol() public view {
         assertEq(token.symbol(), "DSG");
     }
 
-    function test_decimals() public view {
-        assertEq(token.decimals(), 18);
+    function test_VotesAreZeroBeforeDelegation() public view {
+        assertEq(token.getVotes(owner), 0);
     }
 
-    function test_initialBalance() public view {
-        assertEq(token.balanceOf(address(this)), 1_000_000e18);
+    function test_SelfDelegationCreatesVotingPower() public {
+        token.delegate(owner);
+
+        assertEq(token.getVotes(owner), INITIAL_SUPPLY);
+        assertEq(token.delegates(owner), owner);
     }
 
-    function test_transfer() public {
-        token.transfer(alice, 1000e18);
-        assertEq(token.balanceOf(alice), 1000e18);
+    function test_TransferUpdatesBalance() public {
+        token.transfer(alice, TRANSFER_AMOUNT);
+
+        assertEq(token.balanceOf(alice), TRANSFER_AMOUNT);
+        assertEq(token.balanceOf(owner), INITIAL_SUPPLY - TRANSFER_AMOUNT);
     }
 
-    function test_delegate_self() public {
-        token.transfer(alice, 1000e18);
-        vm.prank(alice);
-        token.delegate(alice);
-        vm.roll(block.number + 1);
-        assertEq(token.getVotes(alice), 1000e18);
-    }
+    function test_DelegateToAnotherAccount() public {
+        token.transfer(alice, TRANSFER_AMOUNT);
 
-    function test_delegate_to_other() public {
-        token.transfer(alice, 1000e18);
         vm.prank(alice);
         token.delegate(bob);
-        vm.roll(block.number + 1);
-        assertEq(token.getVotes(bob), 1000e18);
+
+        assertEq(token.delegates(alice), bob);
+        assertEq(token.getVotes(bob), TRANSFER_AMOUNT);
+    }
+
+    function test_TransferAfterDelegationUpdatesVotingPower() public {
+        token.delegate(owner);
+
+        assertEq(token.getVotes(owner), INITIAL_SUPPLY);
+
+        token.transfer(alice, TRANSFER_AMOUNT);
+
+        assertEq(token.getVotes(owner), INITIAL_SUPPLY - TRANSFER_AMOUNT);
         assertEq(token.getVotes(alice), 0);
     }
 
-    function test_votingPower_afterTransfer() public {
-        token.transfer(alice, 500e18);
+    function test_CheckpointsWorkAfterDelegation() public {
+        token.transfer(alice, TRANSFER_AMOUNT);
+
         vm.prank(alice);
         token.delegate(alice);
+
+        uint256 checkpointBlock = block.number;
+
         vm.roll(block.number + 1);
-        assertEq(token.getVotes(alice), 500e18);
-        vm.prank(alice);
-        token.transfer(bob, 200e18);
-        vm.roll(block.number + 1);
-        assertEq(token.getVotes(alice), 300e18);
+
+        assertEq(token.getPastVotes(alice, checkpointBlock), TRANSFER_AMOUNT);
     }
 
-    function test_getPastVotes() public {
-        token.transfer(alice, 1000e18);
-        vm.prank(alice);
-        token.delegate(alice);
-        uint256 blockNum = block.number;
-        vm.roll(blockNum + 2);
-        assertEq(token.getPastVotes(alice, blockNum + 1), 1000e18);
+    function test_NoncesStartAtZero() public view {
+        assertEq(token.nonces(alice), 0);
     }
 
-    function test_approve_and_transferFrom() public {
-        token.approve(alice, 500e18);
-        vm.prank(alice);
-        token.transferFrom(address(this), bob, 500e18);
-        assertEq(token.balanceOf(bob), 500e18);
-    }
+    function test_PermitApprovesSpenderAndIncrementsNonce() public {
+        uint256 value = 50 ether;
+        uint256 deadline = block.timestamp + 1 days;
 
-    function test_permit() public view {
-        assertEq(token.nonces(alice), 0); // nonces starts at 0
-    }
+        bytes32 permitTypeHash =
+            keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
 
-    function testFuzz_transfer(uint256 amount) public {
-        amount = bound(amount, 1, 1_000_000e18);
-        token.transfer(alice, amount);
-        assertEq(token.balanceOf(alice), amount);
-    }
+        bytes32 structHash = keccak256(abi.encode(permitTypeHash, alice, bob, value, token.nonces(alice), deadline));
 
-    function testFuzz_delegate(uint256 amount) public {
-        amount = bound(amount, 1e18, 500_000e18);
-        token.transfer(alice, amount);
-        vm.prank(alice);
-        token.delegate(alice);
-        vm.roll(block.number + 1);
-        assertEq(token.getVotes(alice), amount);
+        bytes32 digest = keccak256(abi.encodePacked("\x19\x01", token.DOMAIN_SEPARATOR(), structHash));
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(alicePrivateKey, digest);
+
+        token.permit(alice, bob, value, deadline, v, r, s);
+
+        assertEq(token.allowance(alice, bob), value);
+        assertEq(token.nonces(alice), 1);
     }
 }

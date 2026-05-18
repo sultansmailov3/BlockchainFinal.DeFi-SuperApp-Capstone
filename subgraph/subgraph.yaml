@@ -6,7 +6,7 @@ dataSources:
     name: AMM
     network: arbitrum-sepolia
     source:
-      address: "0xEb33bC9caD08F62A04c2Fd17ac242aE5c68DAe34"
+      address: '0x0000000000000000000000000000000000000000'
       abi: AMM
       startBlock: 0
     mapping:
@@ -20,16 +20,16 @@ dataSources:
         - name: AMM
           file: ./abis/AMM.json
       eventHandlers:
-        - event: Swap(indexed address,uint256,uint256,bool)
+        - event: Swap(indexed address,uint256,uint256)
           handler: handleSwap
-        - event: Mint(indexed address,uint256,uint256,uint256)
+        - event: LiquidityAdded(indexed address,uint256,uint256)
           handler: handleLiquidityAdded
       file: ./src/amm.ts
   - kind: ethereum
     name: Governor
     network: arbitrum-sepolia
     source:
-      address: "0x357BbC9D5D6D3964738F6B0fB2114c2EfB194258"
+      address: '0x0000000000000000000000000000000000000000'
       abi: Governor
       startBlock: 0
     mapping:
