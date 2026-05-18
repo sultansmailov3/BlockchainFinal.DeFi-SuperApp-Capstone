@@ -20,7 +20,8 @@ contract PriceOracleTest is Test {
     }
 
     function test_getPrice_revertsStale() public {
-        vm.warp(10000); mock.setUpdatedAt(block.timestamp - 3601);
+        vm.warp(10000);
+        mock.setUpdatedAt(block.timestamp - 3601);
         vm.expectRevert("PriceOracle: stale price");
         oracle.getPrice();
     }
@@ -42,7 +43,8 @@ contract PriceOracleTest is Test {
     }
 
     function test_getPrice_exactStaleness() public {
-        vm.warp(10000); mock.setUpdatedAt(block.timestamp - 3600);
+        vm.warp(10000);
+        mock.setUpdatedAt(block.timestamp - 3600);
         int256 price = oracle.getPrice();
         assertGt(price, 0);
     }

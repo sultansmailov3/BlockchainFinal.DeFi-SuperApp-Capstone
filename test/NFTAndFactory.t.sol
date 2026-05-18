@@ -119,10 +119,7 @@ contract FactoryTest is Test {
 
     function test_createPair_symmetric() public {
         factory.createPair(address(tokenA), address(tokenB));
-        assertEq(
-            factory.getPair(address(tokenA), address(tokenB)),
-            factory.getPair(address(tokenB), address(tokenA))
-        );
+        assertEq(factory.getPair(address(tokenA), address(tokenB)), factory.getPair(address(tokenB), address(tokenA)));
     }
 
     function test_createPair_revertsIdentical() public {
@@ -143,11 +140,9 @@ contract FactoryTest is Test {
     }
 
     function test_createPair2_basic() public {
-        
         address pair = factory.createPairCreate(address(tokenA), address(tokenB));
         assertNotEq(pair, address(0));
     }
-
 
     function test_allPairsLength_initial() public view {
         assertEq(factory.allPairsLength(), 0);

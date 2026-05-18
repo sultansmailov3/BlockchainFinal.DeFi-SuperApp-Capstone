@@ -5,9 +5,7 @@ import {TimelockController} from "@openzeppelin/contracts/governance/TimelockCon
 
 /// @notice 2-day timelock for all governance actions.
 contract ProtocolTimelock is TimelockController {
-    constructor(
-        address[] memory proposers,
-        address[] memory executors,
-        address admin
-    ) TimelockController(2 days, proposers, executors, admin) {}
+    constructor(address[] memory proposers, address[] memory executors, address admin)
+        TimelockController(2 days, proposers, executors, admin)
+    {}
 }

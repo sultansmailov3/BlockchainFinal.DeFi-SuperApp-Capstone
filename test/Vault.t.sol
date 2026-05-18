@@ -26,7 +26,6 @@ contract VaultTest is Test {
         assertGt(shares, 0);
     }
 
-
     function test_deposit_updatesAssets() public {
         vm.startPrank(alice);
         underlying.approve(address(vault), 500e18);
@@ -83,7 +82,6 @@ contract VaultTest is Test {
         vm.stopPrank();
         assertGt(assets, 0);
     }
-
 
     function test_convertToShares() public {
         vm.startPrank(alice);

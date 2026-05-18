@@ -10,9 +10,9 @@ import {GovToken} from "../src/GovToken.sol";
 /// @dev Run after Deploy.s.sol to confirm all protocol invariants hold.
 contract Verify is Script {
     address constant GOV_TOKEN = 0x0d89094Ac95e7b77b9bfA789Fae56B114d717D52;
-    address constant TIMELOCK  = 0x6D7031Bd523fe5Dab7eFD1e5e3CBE32726BE24de;
-    address constant GOVERNOR  = 0x357BbC9D5D6D3964738F6B0fB2114c2EfB194258;
-    address constant PROXY     = 0xAfbF9D149BB657f4562F30EAc26FD94c703a3E9D;
+    address constant TIMELOCK = 0x6D7031Bd523fe5Dab7eFD1e5e3CBE32726BE24de;
+    address constant GOVERNOR = 0x357BbC9D5D6D3964738F6B0fB2114c2EfB194258;
+    address constant PROXY = 0xAfbF9D149BB657f4562F30EAc26FD94c703a3E9D;
 
     function run() external view {
         console.log("=== DeFi Super-App Post-Deployment Verification ===");
