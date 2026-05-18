@@ -2,43 +2,75 @@
 pragma solidity ^0.8.20;
 
 import {Test} from "forge-std/Test.sol";
+import {StdInvariant} from "forge-std/StdInvariant.sol";
 import {AMM} from "../src/AMM.sol";
-import {GovToken} from "../src/GovToken.sol";
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 
 contract AMMHandler is Test {
     AMM public amm;
-    GovToken public token0;
-    ERC20 public token1;
+    ERC20Mock public token0;
+    ERC20Mock public token1;
+    address actor = makeAddr("actor");
 
-    constructor(AMM _amm, GovToken _t0, ERC20 _t1) {
+    constructor(AMM _amm, ERC20Mock _t0, ERC20Mock _t1) {
         amm = _amm;
         token0 = _t0;
-        token1 = address(_t1) == address(_t0) ? ERC20(address(0)) : _t1;
+        token1 = _t1;
+        token0.mint(actor, 1_000_000e18);
+        token1.mint(actor, 1_000_000e18);
+        vm.startPrank(actor);
+        token0.approve(address(amm), type(uint256).max);
+        token1.approve(address(amm), type(uint256).max);
+        amm.addLiquidity(10_000e18, 10_000e18);
+        vm.stopPrank();
     }
 
-    function swap(uint256 amountIn, bool isToken0) public {
-        amountIn = bound(amountIn, 1, 1e28);
+    function swap0(uint256 amount) external {
+        amount = bound(amount, 1e15, 100e18);
+        token0.mint(actor, amount);
+        vm.startPrank(actor);
+        token0.approve(address(amm), amount);
+        amm.swap(address(token0), amount, 0);
+        vm.stopPrank();
+    }
+
+    function swap1(uint256 amount) external {
+        amount = bound(amount, 1e15, 100e18);
+        token1.mint(actor, amount);
+        vm.startPrank(actor);
+        token1.approve(address(amm), amount);
+        amm.swap(address(token1), amount, 0);
+        vm.stopPrank();
     }
 }
 
-contract AMMInvariants is Test {
+contract AMMInvariantsTest is StdInvariant, Test {
     AMM public amm;
-    GovToken public t0;
-    ERC20 public t1;
+    ERC20Mock public token0;
+    ERC20Mock public token1;
     AMMHandler public handler;
+    uint256 public initialK;
 
     function setUp() public {
-        t0 = new GovToken(address(this));
-        t1 = new GovToken(address(this));
-        amm = new AMM(address(t0), address(t1));
-
-        handler = new AMMHandler(amm, t0, t1);
+        token0 = new ERC20Mock();
+        token1 = new ERC20Mock();
+        amm = new AMM(address(token0), address(token1));
+        handler = new AMMHandler(amm, token0, token1);
+        initialK = amm.reserve0() * amm.reserve1();
         targetContract(address(handler));
     }
 
-    function invariant_K_NeverDecreases() public view {
-        uint256 k = amm.reserve0() * amm.reserve1();
-        assert(k >= 0);
+    function invariant_kNeverDecreases() public view {
+        uint256 currentK = amm.reserve0() * amm.reserve1();
+        assertGe(currentK, initialK);
+    }
+
+    function invariant_reservesMatchBalances() public view {
+        assertEq(token0.balanceOf(address(amm)), amm.reserve0());
+        assertEq(token1.balanceOf(address(amm)), amm.reserve1());
+    }
+
+    function invariant_totalSupplyPositive() public view {
+        assertGt(amm.totalSupply(), 0);
     }
 }
