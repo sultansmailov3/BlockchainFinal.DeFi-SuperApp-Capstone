@@ -1,150 +1,86 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.24;
 
-import {Test} from "forge-std/Test.sol";
-import {ProtocolNFT} from "../src/ProtocolNFT.sol";
-import {Factory} from "../src/Factory.sol";
-import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
+import "forge-std/Test.sol";
 
-contract ProtocolNFTTest is Test {
-    ProtocolNFT public nft;
-    address owner = makeAddr("owner");
-    address alice = makeAddr("alice");
-    address bob = makeAddr("bob");
+import "../src/ProtocolNFT.sol";
+import "../src/Factory.sol";
+
+contract NFTAndFactoryTest is Test {
+    ProtocolNFT nft;
+    Factory factory;
+
+    address owner = address(this);
+    address alice = address(0xA11CE);
+    address bob = address(0xB0B);
 
     function setUp() public {
         nft = new ProtocolNFT(owner);
+        factory = new Factory();
     }
 
-    function test_mint_basic() public {
-        vm.prank(owner);
-        uint256 id = nft.mint(alice, "ipfs://1");
-        assertEq(nft.ownerOf(id), alice);
+    function test_NFTName() public view {
+        assertEq(nft.name(), "Protocol NFT");
     }
 
-    function test_mint_incrementsId() public {
-        vm.startPrank(owner);
-        nft.mint(alice, "ipfs://1");
-        nft.mint(alice, "ipfs://2");
-        vm.stopPrank();
-        assertEq(nft.totalMinted(), 2);
+    function test_NFTSymbol() public view {
+        assertEq(nft.symbol(), "PNFT");
     }
 
-    function test_mint_setsURI() public {
-        vm.prank(owner);
-        uint256 id = nft.mint(alice, "ipfs://abc");
-        assertEq(nft.tokenURI(id), "ipfs://abc");
+    function test_OwnerCanMintNFT() public {
+        uint256 tokenId = nft.mint(alice);
+
+        assertEq(tokenId, 0);
+        assertEq(nft.ownerOf(tokenId), alice);
+        assertEq(nft.balanceOf(alice), 1);
     }
 
-    function test_mint_revertsNonOwner() public {
+    function test_MultipleMintsIncrementTokenId() public {
+        uint256 firstId = nft.mint(alice);
+        uint256 secondId = nft.mint(bob);
+
+        assertEq(firstId, 0);
+        assertEq(secondId, 1);
+        assertEq(nft.ownerOf(0), alice);
+        assertEq(nft.ownerOf(1), bob);
+        assertEq(nft.nextTokenId(), 2);
+    }
+
+    function test_NonOwnerCannotMintNFT() public {
         vm.prank(alice);
         vm.expectRevert();
-        nft.mint(bob, "ipfs://hack");
+        nft.mint(alice);
     }
 
-    function test_mint_emitsEvent() public {
-        vm.prank(owner);
-        vm.expectEmit(true, true, false, false);
-        emit ProtocolNFT.Minted(alice, 0);
-        nft.mint(alice, "ipfs://ev");
+    function test_FactoryCanDeployWithCreate() public {
+        address deployed = factory.deployCreate();
+
+        assertTrue(deployed != address(0));
     }
 
-    function test_minYul_correct() public view {
-        assertEq(nft.minYul(3, 7), 3);
-        assertEq(nft.minYul(7, 3), 3);
-        assertEq(nft.minYul(5, 5), 5);
+    function test_FactoryCanDeployWithCreate2() public {
+        bytes32 salt = bytes32(uint256(1));
+
+        address deployed = factory.deployCreate2(salt);
+
+        assertTrue(deployed != address(0));
     }
 
-    function test_maxYul_correct() public view {
-        assertEq(nft.maxYul(3, 7), 7);
-        assertEq(nft.maxYul(7, 3), 7);
-        assertEq(nft.maxYul(5, 5), 5);
+    function test_FactoryCreate2AddressIsDeterministic() public {
+        bytes32 salt = bytes32(uint256(123));
+
+        address predicted = factory.computeCreate2Address(salt);
+        address deployed = factory.deployCreate2(salt);
+
+        assertEq(deployed, predicted);
     }
 
-    function test_minYul_matchesSolidity() public view {
-        assertEq(nft.minYul(123, 456), nft.minSolidity(123, 456));
-    }
+    function test_FactoryCreate2RevertsOnSameSalt() public {
+        bytes32 salt = bytes32(uint256(999));
 
-    function test_maxYul_matchesSolidity() public view {
-        assertEq(nft.maxYul(123, 456), nft.maxSolidity(123, 456));
-    }
+        factory.deployCreate2(salt);
 
-    function test_isContractYul_contract() public view {
-        assertTrue(nft.isContractYul(address(nft)));
-    }
-
-    function test_isContractYul_eoa() public view {
-        assertFalse(nft.isContractYul(alice));
-    }
-
-    function test_totalMintedYul() public {
-        vm.startPrank(owner);
-        nft.mint(alice, "1");
-        nft.mint(alice, "2");
-        vm.stopPrank();
-        assertEq(nft.totalMintedYul(), 2);
-    }
-
-    function testFuzz_minYul(uint256 a, uint256 b) public view {
-        assertEq(nft.minYul(a, b), nft.minSolidity(a, b));
-    }
-
-    function testFuzz_maxYul(uint256 a, uint256 b) public view {
-        assertEq(nft.maxYul(a, b), nft.maxSolidity(a, b));
-    }
-}
-
-contract FactoryTest is Test {
-    Factory public factory;
-    ERC20Mock public tokenA;
-    ERC20Mock public tokenB;
-    ERC20Mock public tokenC;
-
-    function setUp() public {
-        factory = new Factory();
-        tokenA = new ERC20Mock();
-        tokenB = new ERC20Mock();
-        tokenC = new ERC20Mock();
-    }
-
-    function test_createPair_basic() public {
-        address pair = factory.createPair(address(tokenA), address(tokenB));
-        assertNotEq(pair, address(0));
-    }
-
-    function test_createPair_stored() public {
-        factory.createPair(address(tokenA), address(tokenB));
-        assertNotEq(factory.getPair(address(tokenA), address(tokenB)), address(0));
-    }
-
-    function test_createPair_symmetric() public {
-        factory.createPair(address(tokenA), address(tokenB));
-        assertEq(factory.getPair(address(tokenA), address(tokenB)), factory.getPair(address(tokenB), address(tokenA)));
-    }
-
-    function test_createPair_revertsIdentical() public {
         vm.expectRevert();
-        factory.createPair(address(tokenA), address(tokenA));
-    }
-
-    function test_createPair_revertsExists() public {
-        factory.createPair(address(tokenA), address(tokenB));
-        vm.expectRevert();
-        factory.createPair(address(tokenA), address(tokenB));
-    }
-
-    function test_createPair_multiple() public {
-        factory.createPair(address(tokenA), address(tokenB));
-        factory.createPair(address(tokenA), address(tokenC));
-        assertEq(factory.allPairsLength(), 2);
-    }
-
-    function test_createPair2_basic() public {
-        address pair = factory.createPairCreate(address(tokenA), address(tokenB));
-        assertNotEq(pair, address(0));
-    }
-
-    function test_allPairsLength_initial() public view {
-        assertEq(factory.allPairsLength(), 0);
+        factory.deployCreate2(salt);
     }
 }
